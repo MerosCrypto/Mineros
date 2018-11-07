@@ -44,8 +44,8 @@ proc newBlockObj*(
     last: ArgonHash,
     verifications: Verifications,
     miners: Miners,
-    time: uint,
-    proof: uint
+    proof: uint,
+    time: uint
 ): Block {.raises: [ArgonError].} =
     #Create the Block.
     result = Block(

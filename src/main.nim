@@ -105,10 +105,33 @@ proc checkup() {.async.} =
         #Run every ten seconds.
         await sleepAsync(10000)
 
+        var
+            #JSON Verifications.
+            jsonVerifs: JSONNode
+            #New Verifications.
+            newVerifs: Verifications = newVerificationsObj()
+
         #Get the Verifications.
         await acquireRPC()
-        var jsonVerifs: JSONNode = await rpc.lattice.getUnarchivedVerifications()
+        jsonVerifs = await rpc.lattice.getUnarchivedVerifications()
         releaseRPC()
+
+        #Parse it.
+        for jsonVerif in jsonVerifs.items():
+            var verif: MemoryVerification = newMemoryVerification(
+                jsonVerif["hash"].getStr().toHash(512)
+            )
+            verif.verifier = newBLSPublicKey(jsonVerif["verifier"].getStr)
+            verif.signature = newBLSSignature(jsonVerif["signature"].getStr)
+
+            #Add it to the New Verifications.
+            newVerifs.verifications.add(verif)
+
+        #Calculate the signature.
+        newVerifs.calculateSig()
+
+        #Set the Verifications to the New Verifications.
+        verifs = newVerifs
 
 #Main function is so this runs async.
 proc main() {.async.} =

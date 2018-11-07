@@ -1,8 +1,9 @@
 #Util lib.
 import Ember/lib/Util
 
-#BN lib.
+#Numerical libs.
 import BN
+import Ember/lib/Base
 
 #Hash lib.
 import Ember/lib/Hash
@@ -28,7 +29,7 @@ import asyncdispatch
 #JSON standard lib.
 import json
 
-#Main function is so these varriables can be GC'd.
+#Main function is so these variables can be GC'd.
 proc main() {.async.} =
     var
         #Connect to the EMB Node.
@@ -46,9 +47,9 @@ proc main() {.async.} =
         #Last Block hash.
         last: ArgonHash = (
             await rpc.merit.getBlock(
-                await rpc.merit.getHeight()
+                (await rpc.merit.getHeight()) - 1
             )
-        )["header"]["last"].getStr().toArgonHash()
+        )["argon"].getStr().toArgonHash()
         #Verifications object.
         verifs: Verifications = newVerificationsObj()
         #Miners object.
@@ -65,6 +66,7 @@ proc main() {.async.} =
     while true:
         #Get the difficulty.
         difficulty = newBN(await rpc.merit.getDifficulty())
+
         #Create a block.
         newBlock = newBlock(
             nonce,
@@ -77,7 +79,7 @@ proc main() {.async.} =
         while true:
             try:
                 #Make sure the Block beats the difficulty.
-                if newBlock.header.last.toBN() < difficulty:
+                if newBlock.argon.toBN() < difficulty:
                     raise newException(Exception, "Block didn't beat the Difficulty.")
 
                 #Publish the block.
@@ -100,3 +102,4 @@ proc main() {.async.} =
         last = newBlock.argon
 
 asyncCheck main()
+runForever()

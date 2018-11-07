@@ -8,6 +8,9 @@ import Ember/lib/Base
 #Hash lib.
 import Ember/lib/Hash
 
+#BLS lib.
+import Ember/lib/BLS
+
 #Merit objects.
 import Ember/Merit/objects/DifficultyObj
 import Ember/Merit/objects/MinersObj
@@ -23,6 +26,9 @@ import Ember/Serialize/SerializeBlock
 #Ember RPC lib.
 import EmberRPC
 
+#OS standard lib.
+import os
+
 #Async standard lib.
 import asyncdispatch
 
@@ -34,10 +40,21 @@ proc main() {.async.} =
     var
         #Connect to the EMB Node.
         rpc: EmberRPC = await newEmberRPC()
+        #Create a Wallet for signing Verifications.
+        miner: MinerWallet
+
+    #If there are params...
+    if paramCount() > 0:
+        #If a key was passed...
+        miner = newMinerWallet(newBLSPrivateKeyFromBytes(paramStr(1)))
+    else:
+        #Else, create a new wallet.
+        miner = newMinerWallet()
+        echo "No wallet was passed in. A new one has been created with a Private Key of " & $miner.privateKey & "."
+
+    var
         #Difficulty.
         difficulty: BN
-        #Create a Wallet for signing Verifications.
-        miner: MinerWallet = newMinerWallet()
         #Gensis string.
         genesis: string = "mainnet"
         #Block.
@@ -83,13 +100,15 @@ proc main() {.async.} =
                     raise newException(Exception, "Block didn't beat the Difficulty.")
 
                 #Publish the block.
-                await rpc.merit.publishBlock(newBlock.serialize())
+                try:
+                    await rpc.merit.publishBlock(newBlock.serialize())
+                except:
+                    echo "The miner submitted a Block the Node considered invalid."
+                    quit(-1)
 
                 #If we succeded, break.
                 break
             except:
-                #If we failed, print the proof we tried.
-                echo "Proof " & $newBlock.proof & " failed."
                 #Increase the proof.
                 inc(newBlock)
 

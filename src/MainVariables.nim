@@ -1,8 +1,5 @@
 include MainImports
 
-const
-    gensis: string = "EMB_DEVELOPER_TESTNET"
-
 var
     #Connect to the EMB Node.
     rpc: EmberRPC = waitFor newEmberRPC()
@@ -10,35 +7,31 @@ var
     rpcLock: Lock
     #Boolean for making sure async procs don't use the RPC at the same time.
     rpcBool: bool
+
     #Public Key to mine to.
     publicKey: BLSPublicKey
-    #Difficulty.
+
+    #Current Difficulty.
     difficulty: BN
     #Nonce.
-    nonce: uint = uint(waitFor rpc.merit.getHeight())
+    nonce: uint
     #Last Block hash.
-    last: ArgonHash = (
-        waitFor rpc.merit.getBlock(
-            int(nonce - 1)
-        )
-    )["argon"].getStr().toArgonHash()
+    last: ArgonHash
     #Verifications object.
-    verifs: Verifications = newVerificationsObj()
+    verifs: Verifications
     #Miners object.
     miners: Miners
 
-#Calculate the Verifications' signature.
-verifs.calculateSig()
-
-#If there are params...
+#If there are params, load them.
 if paramCount() > 0:
     publicKey = newBLSPublicKey(paramStr(1))
+#Else, create a new wallet to mine to.
 else:
-    #Else, create a new wallet.
     var miner: MinerWallet = newMinerWallet()
     publicKey = miner.publicKey
     echo "No wallet was passed in. A new one has been created with a Private Key of " & $miner.privateKey & "."
 
+#Create the Miners object now that we know the Public Key.
 miners = @[(
     newMinerObj(
         publicKey,

@@ -3,6 +3,10 @@ include MainLocks
 #Reset all data.
 #This is used when someone else mines a Block or we publish an invalid one.
 proc reset() {.async.} =
+    #Difficulty.
+    #Nonce.
+    #Last.
+    #Verifications
     discard
 
 #Check for Verifications.

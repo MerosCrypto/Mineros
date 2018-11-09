@@ -12,6 +12,9 @@
 #Include the last file in the sequence.
 include MainMine
 
+#Reset so we have data to mine with.
+waitFor reset()
+
 #Start mining.
 asyncCheck mine(0)
 

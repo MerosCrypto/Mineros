@@ -3,17 +3,34 @@ include MainLocks
 #Reset all data.
 #This is used when someone else mines a Block or we publish an invalid one.
 proc reset() {.async.} =
-    #Difficulty.
+    #Acquire the RPC.
+    await acquireRPC()
+
     #Nonce.
+    nonce = uint(await rpc.merit.getHeight())
+
+    #Difficulty.
+    difficulty = newBN(await rpc.merit.getDifficulty())
+
     #Last.
-    #Verifications
-    discard
+    last = (
+        await rpc.merit.getBlock(
+            int(nonce - 1)
+        )
+    )["argon"].getStr().toArgonHash()
+
+    #Verifications.
+    verifs = newVerificationsObj()
+    verifs.calculateSig()
+
+    #Release the RPC.
+    releaseRPC()
 
 #Check for Verifications.
 proc checkup() {.async.} =
     while true:
-        #Run every ten seconds.
-        await sleepAsync(10000)
+        #Run every five seconds.
+        await sleepAsync(5000)
 
         var
             #New Nonce.

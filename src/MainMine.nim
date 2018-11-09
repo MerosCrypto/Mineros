@@ -37,7 +37,20 @@ proc mine(startProof: uint) {.async.} =
                     await rpc.merit.publishBlock(newBlock.serialize())
                     releaseRPC()
                 except:
+                    #Make sure we released the RPC.
+                    releaseRPC()
+                    #Since we thought we published a valid block, reset.
                     await reset()
+                    #Recreate the Block.
+                    newBlock = newBlock(
+                        nonce,
+                        last,
+                        verifs,
+                        miners,
+                        startProof
+                    )
+                    #Continue.
+                    continue
 
                 #If we succeded, break.
                 break

@@ -35,5 +35,11 @@ import locks
 #Async standard lib.
 import asyncdispatch
 
+#String utils standard lib.
+import strutils
+
 #JSON standard lib.
 import json
+
+#Tables standard lib.
+import tables

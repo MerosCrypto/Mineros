@@ -22,6 +22,7 @@ proc reset() {.async.} =
     #Verifications.
     verifs = newVerificationsObj()
     verifs.calculateSig()
+    added = initTable[string, bool]()
 
     #Release the RPC.
     releaseRPC()
@@ -68,7 +69,17 @@ proc checkup() {.async.} =
         releaseRPC()
 
         #Parse it.
+        var strVerif: string
         for jsonVerif in jsonVerifs.items():
+            #Turn the Verification into a string.
+            strVerif = parseHexStr(jsonVerif["verifier"].getStr()) & parseHexStr(jsonVerif["hash"].getStr())
+            #If we added it, move on.
+            if added.hasKey(strVerif):
+                continue
+            #Make sure we have an entry for it.
+            added[strVerif] = true
+
+            #Create the Verification.
             var verif: MemoryVerification = newMemoryVerification(
                 jsonVerif["hash"].getStr().toHash(512)
             )

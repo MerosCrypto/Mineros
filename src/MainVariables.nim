@@ -19,6 +19,8 @@ var
     last: ArgonHash
     #Verifications object.
     verifs: Verifications
+    #Table of the added Verifications.
+    added: Table[string, bool]
     #Miners object.
     miners: Miners
 
@@ -29,7 +31,7 @@ if paramCount() > 0:
 else:
     var miner: MinerWallet = newMinerWallet()
     publicKey = miner.publicKey
-    echo "No wallet was passed in. A new one has been created with a Private Key of " & $miner.privateKey & "."
+    echo "No wallet was passed in. A new one has been created with a Private Key of " & $miner.privateKey & " and Public Key of " & $miner.publicKey & "."
 
 #Create the Miners object now that we know the Public Key.
 miners = @[(

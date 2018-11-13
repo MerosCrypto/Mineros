@@ -61,7 +61,5 @@ proc mine(startProof: uint) {.async.} =
         #Print that we mined a block.
         echo "Mined a block: " & $nonce
 
-        #Increase the nonce.
-        inc(nonce)
-        #Update last.
-        last = newBlock.argon
+        #Reset the Block data.
+        await reset()

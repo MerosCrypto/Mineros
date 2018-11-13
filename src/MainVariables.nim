@@ -20,7 +20,7 @@ var
     #Verifications object.
     verifs: Verifications
     #Table of the added Verifications.
-    added: Table[string, bool]
+    added: Table[string, bool] = initTable[string, bool]()
     #Miners object.
     miners: Miners
 

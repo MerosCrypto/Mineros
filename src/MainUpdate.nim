@@ -22,8 +22,19 @@ proc reset() {.async.} =
     #Verifications.
     verifs = newVerificationsObj()
 
-    var jsonVerifs: JSONNode = await rpc.lattice.getUnarchivedVerifications()
+    var
+        jsonVerifs: JSONNode = await rpc.lattice.getUnarchivedVerifications()
+        strVerif: string
     for verif in jsonverifs.items:
+        #Get the serialized Verification.
+        strVerif = parseHexStr(verif["verifier"].getStr()) & parseHexStr(verif["hash"].getStr())
+        #If we added it, move on.
+        if added.hasKey(strVerif):
+            continue
+        #Say we added it.
+        added[strVerif] = true
+
+        #Add each Verification.
         verifs.verifications.add(
             newMemoryVerification(verif["hash"].getStr().toHash(512))
         )
@@ -37,7 +48,6 @@ proc reset() {.async.} =
         )
 
     verifs.calculateSig()
-    added = initTable[string, bool]()
 
     #Release the RPC.
     releaseRPC()
@@ -56,7 +66,7 @@ proc checkup() {.async.} =
             #JSON Verifications.
             jsonVerifs: JSONNode
             #New Verifications.
-            newVerifs: Verifications = newVerificationsObj()
+            newVerifs: Verifications
 
         #Get the current Blockchain Height and Last Hash.
         await acquireRPC()
@@ -78,6 +88,9 @@ proc checkup() {.async.} =
             await reset()
             return
 
+        #Set newVerifs to the existing verifs.
+        newVerifs[] = verifs[]
+
         #Get the Verifications.
         await acquireRPC()
         jsonVerifs = await rpc.lattice.getUnarchivedVerifications()
@@ -85,24 +98,27 @@ proc checkup() {.async.} =
 
         #Parse it.
         var strVerif: string
-        for jsonVerif in jsonVerifs.items():
-            #Turn the Verification into a string.
-            strVerif = parseHexStr(jsonVerif["verifier"].getStr()) & parseHexStr(jsonVerif["hash"].getStr())
+        for verif in jsonVerifs.items():
+            #Get the serialized Verification.
+            strVerif = parseHexStr(verif["verifier"].getStr()) & parseHexStr(verif["hash"].getStr())
             #If we added it, move on.
             if added.hasKey(strVerif):
                 continue
-            #Make sure we have an entry for it.
+            #Say we added it.
             added[strVerif] = true
 
-            #Create the Verification.
-            var verif: MemoryVerification = newMemoryVerification(
-                jsonVerif["hash"].getStr().toHash(512)
+            #Add each Verification.
+            newVerifs.verifications.add(
+                newMemoryVerification(verif["hash"].getStr().toHash(512))
             )
-            verif.verifier = newBLSPublicKey(jsonVerif["verifier"].getStr)
-            verif.signature = newBLSSignature(jsonVerif["signature"].getStr)
-
-            #Add it to the New Verifications.
-            newVerifs.verifications.add(verif)
+            newVerifs.verifications[^1].verifier = newBLSPublicKey(verif["verifier"].getStr())
+            newVerifs.verifications[^1].signature = newBLSSignature(verif["signature"].getStr())
+            newVerifs.verifications[^1].signature.setAggregationInfo(
+                newBLSAggregationInfo(
+                    newVerifs.verifications[^1].verifier,
+                    newVerifs.verifications[^1].hash.toString()
+                )
+            )
 
         #Calculate the signature.
         newVerifs.calculateSig()

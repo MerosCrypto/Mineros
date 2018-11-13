@@ -21,6 +21,21 @@ proc reset() {.async.} =
 
     #Verifications.
     verifs = newVerificationsObj()
+
+    var jsonVerifs: JSONNode = await rpc.lattice.getUnarchivedVerifications()
+    for verif in jsonverifs.items:
+        verifs.verifications.add(
+            newMemoryVerification(verif["hash"].getStr().toHash(512))
+        )
+        verifs.verifications[^1].verifier = newBLSPublicKey(verif["verifier"].getStr())
+        verifs.verifications[^1].signature = newBLSSignature(verif["signature"].getStr())
+        verifs.verifications[^1].signature.setAggregationInfo(
+            newBLSAggregationInfo(
+                verifs.verifications[^1].verifier,
+                verifs.verifications[^1].hash.toString()
+            )
+        )
+
     verifs.calculateSig()
     added = initTable[string, bool]()
 

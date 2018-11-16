@@ -59,7 +59,7 @@ proc mine(startProof: uint) {.async.} =
                 inc(newBlock)
 
         #Print that we mined a block.
-        echo "Mined a block: " & $nonce
+        echo "Mined Block " & $nonce & "."
 
         #Reset the Block data.
         await reset()

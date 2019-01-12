@@ -1,4 +1,4 @@
-include MainLocks
+include MainBlock
 
 #Reset all data.
 #This is used when someone else mines a Block or we publish an invalid one.
@@ -20,9 +20,8 @@ proc reset() {.async.} =
     )["hash"].getStr().toArgonHash()
 
     #Handle Verifications.
-    ###
-    ###
-    ###
+    verifs = @[]
+    merkles = initTable[string, string]()
 
     #Release the RPC.
     releaseRPC()

@@ -16,9 +16,7 @@ proc mine(startProof: uint) {.async.} =
         releaseRPC()
 
         #Create a block.
-        ###
-        ###
-        ###
+        newBlock = newBlock(nonce, last, verifs, miners)
 
         #Mine it.
         while true:
@@ -38,9 +36,7 @@ proc mine(startProof: uint) {.async.} =
                     #Since we thought we published a valid block, reset.
                     await reset()
                     #Recreate the Block.
-                    ###
-                    ###
-                    ###
+                    newBlock = newBlock(nonce, last, verifs, miners)
                     #Continue.
                     continue
 

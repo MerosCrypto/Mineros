@@ -15,6 +15,10 @@ var
     nonce: uint
     #Last Block hash.
     last: ArgonHash
+    #Verifications.
+    verifs: seq[Index]
+    #Merkles.
+    merkles: Table[string, string]
     #Miners object.
     miners: Miners
 

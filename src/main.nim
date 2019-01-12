@@ -2,7 +2,8 @@
 #It starts with MainImports.
 #MainImports is included by MainVariables.
 #MainVariables is included by MainLocks.
-#MainLocks is included by MainUpdate.
+#MainLocks is included by MainBlock.
+#MainBlock is included by MainUpdate.
 #MainUpdate is included by MainMine.
 #It ends with MainMine.
 

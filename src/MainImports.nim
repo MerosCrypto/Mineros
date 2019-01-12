@@ -12,17 +12,14 @@ import Meros/lib/Hash
 import Meros/lib/BLS
 import Meros/Wallet/MinerWallet
 
-#Verifications libs.
-###
-###
-###
+#Index object.
+import Meros/Database/common/objects/IndexObj
 
-#Merit objects.
-import Meros/Merit/objects/DifficultyObj
-import Meros/Merit/objects/MinersObj
+#Miners object.
+import Meros/Database/Merit/objects/MinersObj
 
-#Merit libs.
-import Meros/Merit/Block
+#Block lib.
+import Meros/Database/Merit/Block
 
 #Serialization libs.
 #We do not import SerializeBlock because that requires a Verifications object, which we never fully create.

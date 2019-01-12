@@ -13,6 +13,9 @@ import Meros/lib/BLS
 import Meros/Wallet/MinerWallet
 
 #Verifications libs.
+###
+###
+###
 
 #Merit objects.
 import Meros/Merit/objects/DifficultyObj

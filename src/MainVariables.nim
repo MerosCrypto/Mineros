@@ -1,12 +1,10 @@
 include MainImports
 
 var
-    #Connect to the EMB Node.
+    #Connect to the Meros Node.
     rpc: MerosRPC = waitFor newMerosRPC()
     #Lock for using the RPC.
     rpcLock: Lock
-    #Boolean for making sure async procs don't use the RPC at the same time.
-    rpcBool: bool
 
     #Public Key to mine to.
     publicKey: BLSPublicKey
@@ -17,10 +15,6 @@ var
     nonce: uint
     #Last Block hash.
     last: ArgonHash
-    #Verifications object.
-    verifs: Verifications
-    #Table of the added Verifications.
-    added: Table[string, bool] = initTable[string, bool]()
     #Miners object.
     miners: Miners
 

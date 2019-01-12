@@ -16,19 +16,15 @@ proc mine(startProof: uint) {.async.} =
         releaseRPC()
 
         #Create a block.
-        newBlock = newBlock(
-            nonce,
-            last,
-            verifs,
-            miners,
-            startProof
-        )
+        ###
+        ###
+        ###
 
         #Mine it.
         while true:
             try:
                 #Make sure the Block beats the difficulty.
-                if newBlock.argon.toBN() < difficulty:
+                if newBlock.hash.toBN() < difficulty:
                     raise newException(Exception, "Block didn't beat the Difficulty.")
 
                 #Publish the block.
@@ -42,13 +38,9 @@ proc mine(startProof: uint) {.async.} =
                     #Since we thought we published a valid block, reset.
                     await reset()
                     #Recreate the Block.
-                    newBlock = newBlock(
-                        nonce,
-                        last,
-                        verifs,
-                        miners,
-                        startProof
-                    )
+                    ###
+                    ###
+                    ###
                     #Continue.
                     continue
 

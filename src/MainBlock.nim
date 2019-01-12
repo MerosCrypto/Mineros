@@ -8,6 +8,7 @@ proc newBlock(
     nonce: uint,
     last: ArgonHash,
     verifs: seq[Index],
+    aggregates: seq[BLSSignature],
     miners: Miners
 ): Block =
     result = Block(
@@ -23,8 +24,9 @@ proc newBlock(
         miners: miners
     )
 
+    #If we have Verifications, aggregate their aggregates and put it in the header.
     if verifs.len > 0:
-        discard
+        result.header.verifications = aggregates.aggregate()
 
     #Set the Header hash.
     result.hash = Argon(result.header.serialize(), result.header.proof.toBinary())

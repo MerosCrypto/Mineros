@@ -19,8 +19,12 @@ var
     verifs: seq[Index]
     #Merkles.
     merkles: Table[string, string]
+    #Aggregate Signatures.
+    aggregates: seq[BLSSignature]
     #Miners object.
     miners: Miners
+    #Block.
+    mining: Block
 
 #If there are params, load them.
 if paramCount() > 0:

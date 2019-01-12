@@ -8,23 +8,25 @@ import Meros/lib/Base
 #Hash lib.
 import Meros/lib/Hash
 
-#BLS lib.
+#BLS/MinerWallet libs.
 import Meros/lib/BLS
+import Meros/Wallet/MinerWallet
+
+#Verifications libs.
 
 #Merit objects.
 import Meros/Merit/objects/DifficultyObj
 import Meros/Merit/objects/MinersObj
 
 #Merit libs.
-import Meros/Merit/Verifications
-import Meros/Merit/MinerWallet
 import Meros/Merit/Block
 
-#Block Serialization lib.
-import Meros/Serialize/SerializeBlock
-
-#Meros RPC lib.
-import MerosRPC
+#Serialization libs.
+#We do not import SerializeBlock because that requires a Verifications object, which we never fully create.
+#Instead, we import these three libs and create our own SerializeVerifications (later), for our own 'SerializeBlock'.
+import Meros/Network/Serialize/SerializeCommon
+import Meros/Network/Serialize/Merit/SerializeBlockHeader
+import Meros/Network/Serialize/Merit/SerializeMiners
 
 #OS standard lib.
 import os
@@ -43,3 +45,6 @@ import json
 
 #Tables standard lib.
 import tables
+
+#Meros RPC lib.
+import MerosRPC

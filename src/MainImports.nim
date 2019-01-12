@@ -1,30 +1,30 @@
 #Util lib.
-import Ember/lib/Util
+import Meros/lib/Util
 
 #Numerical libs.
 import BN
-import Ember/lib/Base
+import Meros/lib/Base
 
 #Hash lib.
-import Ember/lib/Hash
+import Meros/lib/Hash
 
 #BLS lib.
-import Ember/lib/BLS
+import Meros/lib/BLS
 
 #Merit objects.
-import Ember/Merit/objects/DifficultyObj
-import Ember/Merit/objects/MinersObj
+import Meros/Merit/objects/DifficultyObj
+import Meros/Merit/objects/MinersObj
 
 #Merit libs.
-import Ember/Merit/Verifications
-import Ember/Merit/MinerWallet
-import Ember/Merit/Block
+import Meros/Merit/Verifications
+import Meros/Merit/MinerWallet
+import Meros/Merit/Block
 
 #Block Serialization lib.
-import Ember/Serialize/SerializeBlock
+import Meros/Serialize/SerializeBlock
 
-#Ember RPC lib.
-import EmberRPC
+#Meros RPC lib.
+import MerosRPC
 
 #OS standard lib.
 import os

@@ -2,7 +2,7 @@ include MainImports
 
 var
     #Connect to the EMB Node.
-    rpc: EmberRPC = waitFor newEmberRPC()
+    rpc: MerosRPC = waitFor newMerosRPC()
     #Lock for using the RPC.
     rpcLock: Lock
     #Boolean for making sure async procs don't use the RPC at the same time.

@@ -42,4 +42,4 @@ switch("hints", "on")
 
 #Specify where to output built objects.
 switch("nimcache", "build/nimcache")
-switch("out", "build/Blaze")
+switch("out", "build/Mineros")

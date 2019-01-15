@@ -1,9 +1,8 @@
 #The Main files include each other sequentially.
 #It starts with MainImports.
-#MainImports is included by MainVariables.
-#MainVariables is included by MainLocks.
-#MainLocks is included by MainBlock.
-#MainBlock is included by MainUpdate.
+#MainImports is included by MainGlobals.
+#MainGlobals is included by MainLocks.
+#MainLocks is included by MainUpdate.
 #MainUpdate is included by MainMine.
 #It ends with MainMine.
 

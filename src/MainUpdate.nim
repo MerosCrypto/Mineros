@@ -1,20 +1,19 @@
-include MainBlock
+include MainLocks
 
 #Get the most recent Verifications.
 proc getVerifs() {.async.} =
     verifs = @[]
-    merkles = initTable[string, string]()
     aggregates = @[]
 
     var jsonVerifs: JSONNode = await rpc.verifications.getUnarchivedVerifications()
     for index in jsonVerifs:
         verifs.add(
-            newIndex(
+            newVerifierIndex(
                 parseHexStr(index["verifier"].getStr()),
-                uint(index["nonce"].getInt())
+                uint(index["nonce"].getInt()),
+                parseHexStr(index["merkle"].getStr())
             )
         )
-        merkles[verifs[^1].key] = parseHexStr(index["merkle"].getStr())
         aggregates.add(newBLSSignature(index["signature"].getStr()))
 
 #Reset all data.
@@ -43,7 +42,7 @@ proc reset() {.async.} =
     releaseRPC()
 
     #Create a block.
-    mining = newBlock(nonce, last, verifs, aggregates, miners)
+    mining = newBlockObj(nonce, last, aggregates.aggregate(), verifs, miners)
 
 #Check for Verifications.
 proc checkup() {.async.} =
@@ -83,4 +82,4 @@ proc checkup() {.async.} =
         releaseRPC()
 
         #Construct a new block.
-        mining = newBlock(nonce, last, verifs, aggregates, miners)
+        mining = newBlockObj(nonce, last, aggregates.aggregate(), verifs, miners)

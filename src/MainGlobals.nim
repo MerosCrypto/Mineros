@@ -16,9 +16,7 @@ var
     #Last Block hash.
     last: ArgonHash
     #Verifications.
-    verifs: seq[Index]
-    #Merkles.
-    merkles: Table[string, string]
+    verifs: seq[VerifierIndex]
     #Aggregate Signatures.
     aggregates: seq[BLSSignature]
     #Miners object.
@@ -31,9 +29,8 @@ if paramCount() > 0:
     publicKey = newBLSPublicKey(paramStr(1))
 #Else, create a new wallet to mine to.
 else:
-    var miner: MinerWallet = newMinerWallet()
-    publicKey = miner.publicKey
-    echo "No wallet was passed in. A new one has been created with a Private Key of " & $miner.privateKey & " and Public Key of " & $miner.publicKey & "."
+    echo "No wallet was passed in. Please run this command with a BLS Public Key (in hex format) after it."
+    quit()
 
 #Create the Miners object now that we know the Public Key.
 miners = @[(

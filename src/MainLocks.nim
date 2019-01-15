@@ -1,4 +1,4 @@
-include MainVariables
+include MainGlobals
 
 #Acquire the RPC.
 proc acquireRPC() {.async.} =

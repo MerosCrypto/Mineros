@@ -1,9 +1,8 @@
 #Util lib.
 import Meros/lib/Util
 
-#Numerical libs.
+#BN lib.
 import BN
-import Meros/lib/Base
 
 #Hash lib.
 import Meros/lib/Hash
@@ -13,7 +12,7 @@ import Meros/lib/BLS
 import Meros/Wallet/MinerWallet
 
 #Index object.
-import Meros/Database/common/objects/IndexObj
+import Meros/Database/Merit/objects/VerifierIndexObj
 
 #Miners object.
 import Meros/Database/Merit/objects/MinersObj
@@ -21,12 +20,8 @@ import Meros/Database/Merit/objects/MinersObj
 #Block lib.
 import Meros/Database/Merit/Block
 
-#Serialization libs.
-#We do not import SerializeBlock because that requires a Verifications object, which we never fully create.
-#Instead, we import these three libs and create our own SerializeVerifications (later), for our own 'SerializeBlock'.
-import Meros/Network/Serialize/SerializeCommon
-import Meros/Network/Serialize/Merit/SerializeBlockHeader
-import Meros/Network/Serialize/Merit/SerializeMiners
+#Serialization lib.
+import Meros/Network/Serialize/Merit/SerializeBlock
 
 #OS standard lib.
 import os

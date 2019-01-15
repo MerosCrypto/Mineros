@@ -14,6 +14,9 @@ proc mine(startProof: uint) {.async.} =
 
         #Mine it.
         while true:
+            #Allow checkup to run.
+            await sleepAsync(1)
+
             try:
                 #Make sure the Block beats the difficulty.
                 if mining.hash.toBN() < difficulty:

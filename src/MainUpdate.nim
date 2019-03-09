@@ -33,7 +33,7 @@ proc reset() {.async.} =
         await rpc.merit.getBlock(
             int(nonce - 1)
         )
-    )["hash"].getStr().toArgonHash()
+    )["header"]["hash"].getStr().toArgonHash()
 
     #Verifications.
     await getVerifs()
@@ -63,7 +63,7 @@ proc checkup() {.async.} =
             await rpc.merit.getBlock(
                 int(newNonce - 1)
             )
-        )["hash"].getStr().toArgonHash()
+        )["header"]["hash"].getStr().toArgonHash()
         releaseRPC()
 
         #If someone else mined a block...

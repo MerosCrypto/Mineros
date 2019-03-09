@@ -19,7 +19,7 @@ proc mine(startProof: uint) {.async.} =
 
             try:
                 #Make sure the Block beats the difficulty.
-                if mining.hash.toBN() < difficulty:
+                if mining.header.hash.toBN() < difficulty:
                     raise newException(Exception, "Block didn't beat the Difficulty.")
 
                 #Publish the block.

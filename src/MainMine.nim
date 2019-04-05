@@ -24,10 +24,12 @@ proc mine(startProof: uint) {.async.} =
 
                 #Publish the block.
                 try:
+                    echo "Publishing a Block."
                     await acquireRPC()
                     await rpc.merit.publishBlock(mining.serialize())
                     releaseRPC()
                 except:
+                    echo "Published Block was rejected."
                     #Make sure we released the RPC.
                     releaseRPC()
                     #Since we thought we published a valid block, reset.

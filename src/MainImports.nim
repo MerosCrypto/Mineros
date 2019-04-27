@@ -1,18 +1,17 @@
+#Errors lib.
+import Meros/lib/Errors
+
 #Util lib.
 import Meros/lib/Util
-
-#BN lib.
-import BN
 
 #Hash lib.
 import Meros/lib/Hash
 
-#BLS/MinerWallet libs.
-import Meros/lib/BLS
+#MinerWallet libs.
 import Meros/Wallet/MinerWallet
 
-#Index object.
-import Meros/Database/Merit/objects/VerifierIndexObj
+#VerifierRecord object.
+import Meros/Database/common/objects/VerifierRecordObj
 
 #Miners object.
 import Meros/Database/Merit/objects/MinersObj
@@ -23,6 +22,9 @@ import Meros/Database/Merit/Block
 #Serialization lib.
 import Meros/Network/Serialize/Merit/SerializeBlock
 
+#BN lib.
+import BN
+
 #OS standard lib.
 import os
 
@@ -31,9 +33,6 @@ import locks
 
 #Async standard lib.
 import asyncdispatch
-
-#String utils standard lib.
-import strutils
 
 #JSON standard lib.
 import json

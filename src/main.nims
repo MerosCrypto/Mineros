@@ -1,6 +1,5 @@
 #Use C++ instead of C.
-if getCommand() == "c":
-    setCommand("cpp")
+setCommand("cpp")
 
 #Necessary flags.
 switch("threads", "on")
@@ -30,8 +29,7 @@ else:
     switch("stackTrace", "on")
     switch("excessiveStackTrace", "on")
 
-#Remove dead code and optimize for size.
-switch("deadCodeElim", "on")
+#Optimize for size.
 switch("opt", "size")
 
 #Enable parallel building.

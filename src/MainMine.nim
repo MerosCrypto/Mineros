@@ -1,7 +1,9 @@
 include MainUpdate
 
 #Mine.
-proc mine(startProof: uint) {.async.} =
+proc mine(
+    startProof: int
+) {.async.} =
     #Start the checkup proc.
     asyncCheck checkup()
 

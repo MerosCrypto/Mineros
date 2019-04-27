@@ -26,7 +26,7 @@ proc reset() {.async.} =
     nonce = await rpc.merit.getHeight()
 
     #Difficulty.
-    difficulty = newBN(await rpc.merit.getDifficulty())
+    difficulty = (await rpc.merit.getDifficulty()).toBNFromHex()
 
     #Last.
     last = (

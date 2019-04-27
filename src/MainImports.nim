@@ -4,6 +4,9 @@ import Meros/lib/Errors
 #Util lib.
 import Meros/lib/Util
 
+#BN/Hex lib.
+import Meros/lib/Hex
+
 #Hash lib.
 import Meros/lib/Hash
 

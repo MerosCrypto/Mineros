@@ -2,19 +2,19 @@ include MainLocks
 
 #Get the most recent Verifications.
 proc getVerifs() {.async.} =
-    verifs = @[]
+    records = @[]
     aggregates = @[]
 
     var jsonVerifs: JSONNode = await rpc.verifications.getUnarchivedVerifications()
-    for index in jsonVerifs:
-        verifs.add(
-            newVerifierIndex(
-                parseHexStr(index["verifier"].getStr()),
-                uint(index["nonce"].getInt()),
-                parseHexStr(index["merkle"].getStr())
+    for record in jsonVerifs:
+        records.add(
+            newVerifierRecord(
+                newBLSPublicKey(record["verifier"].getStr()),
+                record["nonce"].getInt(),
+                record["merkle"].getStr().toHash(384)
             )
         )
-        aggregates.add(newBLSSignature(index["signature"].getStr()))
+        aggregates.add(newBLSSignature(record["signature"].getStr()))
 
 #Reset all data.
 #This is used when someone else mines a Block or we publish an invalid one.
@@ -23,15 +23,15 @@ proc reset() {.async.} =
     await acquireRPC()
 
     #Nonce.
-    nonce = uint(await rpc.merit.getHeight())
+    nonce = await rpc.merit.getHeight()
 
     #Difficulty.
-    difficulty = newBN(await rpc.merit.getDifficulty())
+    difficulty = (await rpc.merit.getDifficulty()).toBNFromHex()
 
     #Last.
     last = (
         await rpc.merit.getBlock(
-            int(nonce - 1)
+            nonce - 1
         )
     )["header"]["hash"].getStr().toArgonHash()
 
@@ -42,7 +42,7 @@ proc reset() {.async.} =
     releaseRPC()
 
     #Create a block.
-    mining = newBlockObj(nonce, last, aggregates.aggregate(), verifs, miners)
+    mining = newBlockObj(nonce, last, aggregates.aggregate(), records, miners)
 
 #Check for Verifications.
 proc checkup() {.async.} =
@@ -52,16 +52,16 @@ proc checkup() {.async.} =
 
         var
             #New Nonce.
-            newNonce: uint
+            newNonce: int
             #New Last Hash.
             newLast: ArgonHash
 
         #Get the current Blockchain Height and Last Hash.
         await acquireRPC()
-        newNonce = uint(await rpc.merit.getHeight())
+        newNonce = await rpc.merit.getHeight()
         newLast = (
             await rpc.merit.getBlock(
-                int(newNonce - 1)
+                newNonce - 1
             )
         )["header"]["hash"].getStr().toArgonHash()
         releaseRPC()
@@ -82,4 +82,4 @@ proc checkup() {.async.} =
         releaseRPC()
 
         #Construct a new block.
-        mining = newBlockObj(nonce, last, aggregates.aggregate(), verifs, miners)
+        mining = newBlockObj(nonce, last, aggregates.aggregate(), records, miners)

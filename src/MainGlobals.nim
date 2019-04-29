@@ -12,15 +12,15 @@ var
     #Current Difficulty.
     difficulty: BN
     #Nonce.
-    nonce: uint
+    nonce: int
     #Last Block hash.
     last: ArgonHash
     #Verifications.
-    verifs: seq[VerifierIndex]
+    records: seq[VerifierRecord]
     #Aggregate Signatures.
     aggregates: seq[BLSSignature]
     #Miners object.
-    miners: Miners
+    miners: Miners = newMinersObj()
     #Block.
     mining: Block
 
@@ -33,9 +33,9 @@ else:
     quit()
 
 #Create the Miners object now that we know the Public Key.
-miners = @[(
+miners.add(
     newMinerObj(
         publicKey,
         100
     )
-)]
+)

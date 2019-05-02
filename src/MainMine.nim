@@ -26,7 +26,6 @@ proc mine(
             echo "Mined Block " & $nonce & "."
         except Exception as e:
             echo "Block we attempted to publish was rejected: " & e.msg
-            break
         finally:
             #Make sure we release the RPC.
             releaseRPC()

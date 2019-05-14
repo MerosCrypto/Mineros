@@ -1,15 +1,15 @@
 include MainLocks
 
-#Get the most recent Verifications.
-proc getVerifs() {.async.} =
+#Get the most recent records.
+proc getRecords() {.async.} =
     records = @[]
     aggregates = @[]
 
-    var jsonVerifs: JSONNode = await rpc.verifications.getUnarchivedVerifications()
-    for record in jsonVerifs:
+    var jsonRecords: JSONNode = await rpc.consensus.getUnarchivedMeritHolderRecords()
+    for record in jsonRecords:
         records.add(
-            newVerifierRecord(
-                newBLSPublicKey(record["verifier"].getStr()),
+            newMeritHolderRecord(
+                newBLSPublicKey(record["holder"].getStr()),
                 record["nonce"].getInt(),
                 record["merkle"].getStr().toHash(384)
             )
@@ -26,7 +26,7 @@ proc reset() {.async.} =
     nonce = await rpc.merit.getHeight()
 
     #Difficulty.
-    difficulty = (await rpc.merit.getDifficulty()).toBNFromHex()
+    difficulty = (await rpc.merit.getDifficulty()).toHash(384)
 
     #Last.
     last = (
@@ -36,7 +36,7 @@ proc reset() {.async.} =
     )["header"]["hash"].getStr().toArgonHash()
 
     #Verifications.
-    await getVerifs()
+    await getRecords()
 
     #Release the RPC.
     releaseRPC()
@@ -78,7 +78,7 @@ proc checkup() {.async.} =
 
         #Get the Verifications.
         await acquireRPC()
-        await getVerifs()
+        await getRecords()
         releaseRPC()
 
         #Construct a new block.

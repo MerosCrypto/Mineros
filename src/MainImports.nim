@@ -4,9 +4,6 @@ import Meros/lib/Errors
 #Util lib.
 import Meros/lib/Util
 
-#BN/Hex lib.
-import Meros/lib/Hex
-
 #Hash lib.
 import Meros/lib/Hash
 
@@ -14,7 +11,7 @@ import Meros/lib/Hash
 import Meros/Wallet/MinerWallet
 
 #VerifierRecord object.
-import Meros/Database/common/objects/VerifierRecordObj
+import Meros/Database/common/objects/MeritHolderRecordObj
 
 #Miners object.
 import Meros/Database/Merit/objects/MinersObj
@@ -25,8 +22,8 @@ import Meros/Database/Merit/Block
 #Serialization lib.
 import Meros/Network/Serialize/Merit/SerializeBlock
 
-#BN lib.
-import BN
+#Meros RPC lib.
+import MerosRPC
 
 #OS standard lib.
 import os
@@ -42,6 +39,3 @@ import json
 
 #Tables standard lib.
 import tables
-
-#Meros RPC lib.
-import MerosRPC

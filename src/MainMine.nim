@@ -10,7 +10,7 @@ proc mine(
     #Mine the chain.
     while true:
         #Mine the current Block.
-        while mining.header.hash.toBN() < difficulty:
+        while mining.header.hash < difficulty:
             #Allow checkup to run.
             await sleepAsync(1)
 

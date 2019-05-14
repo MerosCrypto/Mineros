@@ -4,9 +4,6 @@ import ../Errors
 #Util lib.
 import ../Util
 
-#BN/Raw lib.
-import ../Raw
-
 #Hash master type.
 type Hash*[bits: static[int]] = object
     data*: array[bits div 8, uint8]
@@ -14,7 +11,7 @@ type Hash*[bits: static[int]] = object
 #Empty uint8 'array'.
 var EmptyHash*: ptr uint8
 
-#toHash function.
+#toHash functions.
 func toHash*(
     hash: string,
     bits: static[int]
@@ -27,6 +24,19 @@ func toHash*(
     elif hash.len div 2 == bits div 8:
         for i in countup(0, hash.len - 1, 2):
             result.data[i div 2] = uint8(parseHexInt(hash[i .. i + 1]))
+    else:
+        raise newException(ValueError, "toHash not handed the right amount of data.")
+
+#toHash dedicated for Stint.
+func toHash*(
+    hash: openArray[byte],
+    bits: static[int]
+): Hash[bits] {.forceCheck: [
+    ValueError
+].} =
+    if hash.len == bits div 8:
+        for i in 0 ..< hash.len:
+            result.data[i] = uint8(hash[i])
     else:
         raise newException(ValueError, "toHash not handed the right amount of data.")
 
@@ -44,8 +54,71 @@ func `$`*(
     for b in hash.data:
         result &= b.toHex()
 
-#To BN.
-proc toBN*(
-    hash: Hash
-): BN {.inline, forceCheck: [].} =
-    hash.toString().toBNFromRaw()
+#Compare hash values.
+func `<`*[bits: static[int]](
+    lhs: Hash[bits],
+    rhs: Hash[bits]
+): bool =
+    var bytes: int = bits div 8
+    for i in 0 ..< bytes:
+        if lhs.data[i] == rhs.data[i]:
+            continue
+        elif lhs.data[i] < rhs.data[i]:
+            return true
+        else:
+            return false
+    return false
+
+func `<=`*[bits: static[int]](
+    lhs: Hash[bits],
+    rhs: Hash[bits]
+): bool =
+    var bytes: int = bits div 8
+    for i in 0 ..< bytes:
+        if lhs.data[i] == rhs.data[i]:
+            continue
+        elif lhs.data[i] < rhs.data[i]:
+            return true
+        else:
+            return false
+    return true
+
+func `>`*[bits: static[int]](
+    lhs: Hash[bits],
+    rhs: Hash[bits]
+): bool =
+    var bytes: int = bits div 8
+    for i in 0 ..< bytes:
+        if lhs.data[i] == rhs.data[i]:
+            continue
+        elif lhs.data[i] > rhs.data[i]:
+            return true
+        else:
+            return false
+    return false
+
+func `>=`*[bits: static[int]](
+    lhs: Hash[bits],
+    rhs: Hash[bits]
+): bool =
+    var bytes: int = bits div 8
+    for i in 0 ..< bytes:
+        if lhs.data[i] == rhs.data[i]:
+            continue
+        elif lhs.data[i] > rhs.data[i]:
+            return true
+        else:
+            return false
+    return true
+
+func `==`*[bits: static[int]](
+    lhs: Hash[bits],
+    rhs: Hash[bits]
+): bool =
+    var bytes: int = bits div 8
+    for i in 0 ..< bytes:
+        if lhs.data[i] == rhs.data[i]:
+            continue
+        else:
+            return false
+    return true

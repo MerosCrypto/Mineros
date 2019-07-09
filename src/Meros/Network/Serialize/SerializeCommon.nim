@@ -20,7 +20,7 @@ const
 
     DIFFICULTY_LEN*:     int = INT_LEN + INT_LEN + HASH_LEN
     MINER_LEN*:          int = BLS_PUBLIC_KEY_LEN + BYTE_LEN
-    VERIFIER_INDEX_LEN*: int = BLS_PUBLIC_KEY_LEN + INT_LEN + HASH_LEN
+    MERIT_HOLDER_RECORD_LEN*: int = BLS_PUBLIC_KEY_LEN + INT_LEN + HASH_LEN
     BLOCK_HEADER_LEN*:   int = INT_LEN + HASH_LEN + BLS_SIGNATURE_LEN + HASH_LEN + INT_LEN + INT_LEN
 
     MINT_LEN*:        int = INT_LEN + BLS_PUBLIC_KEY_LEN + INT_LEN
@@ -30,7 +30,7 @@ const
     DATA_PREFIX_LEN*: int = PUBLIC_KEY_LEN + INT_LEN + BYTE_LEN
     DATA_SUFFIX_LEN*: int = INT_LEN + SIGNATURE_LEN
 
-#Deseralizes a string by getting the length of the next byte, slicing that out, and moving on.
+#Deseralizes a string by getting the length of the next set of bytes, slicing that out, and moving on.
 func deserialize*(
     data: string,
     lengths: varargs[int]

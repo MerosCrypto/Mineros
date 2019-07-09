@@ -10,7 +10,7 @@ proc mine(
     #Mine the chain.
     while true:
         #Mine the current Block.
-        while mining.header.hash.toBN() < difficulty:
+        while mining.header.hash < difficulty:
             #Allow checkup to run.
             await sleepAsync(1)
 
@@ -26,7 +26,6 @@ proc mine(
             echo "Mined Block " & $nonce & "."
         except Exception as e:
             echo "Block we attempted to publish was rejected: " & e.msg
-            break
         finally:
             #Make sure we release the RPC.
             releaseRPC()

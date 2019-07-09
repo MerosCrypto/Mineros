@@ -21,7 +21,7 @@ import ../../Network/Serialize/Merit/SerializeBlockHeader
 func newBlockHeader*(
     nonce: Natural,
     last: ArgonHash,
-    verifs: BLSSignature,
+    elements: BLSSignature,
     miners: Blake384Hash,
     time: Natural,
     proof: Natural
@@ -31,12 +31,12 @@ func newBlockHeader*(
     result = newBlockHeaderObj(
         nonce,
         last,
-        verifs,
+        elements,
         miners,
         time,
         proof
     )
     try:
-        result.hash = Argon(result.serialize(), result.proof.toBinary())
+        result.hash = Argon(result.serialize(true), result.proof.toBinary())
     except ArgonError as e:
-        raise e
+        fcRaise e

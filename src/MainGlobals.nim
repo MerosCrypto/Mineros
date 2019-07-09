@@ -10,13 +10,13 @@ var
     publicKey: BLSPublicKey
 
     #Current Difficulty.
-    difficulty: BN
+    difficulty: Hash[384]
     #Nonce.
     nonce: int
     #Last Block hash.
     last: ArgonHash
     #Verifications.
-    records: seq[VerifierRecord]
+    records: seq[MeritHolderRecord]
     #Aggregate Signatures.
     aggregates: seq[BLSSignature]
     #Miners object.

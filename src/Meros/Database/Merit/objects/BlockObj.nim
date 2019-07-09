@@ -13,69 +13,47 @@ import ../../../Wallet/MinerWallet
 #Block Header lib.
 import ../BlockHeader
 
-#VerifierRecord and Miners objects.
-import ../../common/objects/VerifierRecordObj
+#Block Body object.
+import BlockBodyObj
+export BlockBodyObj
+
+#MeritHolderRecord and Miners objects.
+import ../../common/objects/MeritHolderRecordObj
 import MinersObj
 
 #Finals lib.
 import finals
 
-#Tables standard lib.
-import tables
-
-#Define the Block class.
+#Block class.
 type Block* = object
     #Block Header.
     header*: BlockHeader
+    #Block Body.
+    body*: BlockBody
 
-    #Verifier Records.
-    records: seq[VerifierRecord]
-    #Who to attribute the Merit to (amount is 0 (exclusive) to 100 (inclusive)).
-    miners: Miners
-
-#Records getter/setter.
-func records*(
+#Hash getter.
+proc hash*(
     blockArg: Block
-): seq[VerifierRecord] {.inline, forceCheck: [].} =
-    blockArg.records
-func `records=`*(
-    blockArg: var Block,
-    records: seq[VerifierRecord]
-) {.forceCheck: [ValueError].} =
-    #Verify no Verifier has multiple Records.
-    var
-        verifiers: Table[string, bool] = initTable[string, bool]()
-        verifier: string
-    for record in records:
-        verifier = record.key.toString()
-        if verifiers.hasKey(verifier):
-            raise newException(ValueError, "One Verifier has two Records.")
-        verifiers[verifier] = true
+): Hash[384] {.inline, forceCheck: [].} =
+    blockArg.header.hash
 
-    blockArg.records = records
+#Records getter.
+proc records*(
+    blockArg: Block
+): seq[MeritHolderRecord] {.inline, forceCheck: [].} =
+    blockArg.body.records
 
-#Miners getter/setter.
-func miners*(
+#Miners getter.
+proc miners*(
     blockArg: Block
 ): Miners {.inline, forceCheck: [].} =
-    blockArg.miners
-func `miners=`*(
+    blockArg.body.miners
+
+#Miners setter.
+proc `miners=`*(
     blockArg: var Block,
     miners: Miners
-) {.forceCheck: [ValueError].} =
-    #Verify the Miners, unless this is the genesis Block.
-    if blockArg.header.nonce != 0:
-        if (miners.miners.len < 1) or (100 < miners.miners.len):
-            raise newException(ValueError, "Invalid Miners quantity.")
-
-        var total: int = 0
-        for miner in miners.miners:
-            if (miner.amount < 1) or (100 < miner.amount):
-                raise newException(ValueError, "Invalid Miner amount.")
-            total += miner.amount
-        if total != 100:
-            raise newException(ValueError, "Invalid total Miner amount.")
-
+) {.forceCheck: [].} =
     blockArg.miners = miners
     blockArg.header.miners = miners.merkle.hash
 
@@ -84,18 +62,17 @@ func newBlockObj*(
     nonce: Natural,
     last: ArgonHash,
     aggregate: BLSSignature,
-    records: seq[VerifierRecord],
+    records: seq[MeritHolderRecord],
     miners: Miners,
     time: int64 = getTime(),
     proof: Natural = 0
 ): Block {.forceCheck: [
-    ValueError,
     ArgonError
 ].} =
     #Create the Block Header.
     var header: BlockHeader
     try:
-        header = newBlockheader(
+        header = newBlockHeader(
             nonce,
             last,
             aggregate,
@@ -104,15 +81,22 @@ func newBlockObj*(
             proof
         )
     except ArgonError as e:
-        raise e
+        fcRaise e
 
     #Create the Block.
     result = Block(
-        header: header
+        header: header,
+        body: newBlockBodyObj(
+            records,
+            miners
+        )
     )
-    #Unorthodox syntax used to call our custom setters.
-    try:
-        `records=`(result, records)
-        `miners=`(result, miners)
-    except ValueError as e:
-        raise e
+
+func newBlockObj*(
+    header: BlockHeader,
+    body: BlockBody
+): Block {.inline, forceCheck: [].} =
+    Block(
+        header: header,
+        body: body
+    )

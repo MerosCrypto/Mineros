@@ -29,21 +29,20 @@ type
     AddressError*     = object of Exception #Used when passed an invalid Address.
 
     #Database/common Errors.
-    GapError* = object of Exception #Used when trying to add an item, yet missing items before said item.
+    GapError* = object of Exception   #Used when trying to add an item, yet missing items before said item.
+    DataExists* = object of Exception #Used when trying to add data which was already added.
 
     #Database/Filesystem Errors.
     DBError*      = object of LMDBError
     DBWriteError* = object of DBError #Used when writing to the DB fails.
     DBReadError*  = object of DBError #Used when reading from the DB fails.
 
-    #Database/Verifications Errors.
-    MeritRemoval* = object of Exception #Used when a Verifier commits a malicious act against the network.
+    #Database/Consensus Errors.
+    MeritRemoval* = object of Exception #Used when a MeritHolder commits a malicious act against the network.
 
-    #Database/Blockchain Errors.
+    #Database/Merit Errors.
+    UncleBlock*  = object of Exception #Used when we test a BlockHeader and it's on an alternative chain.
     NotInEpochs* = object of Exception #Used when we try to add a Hash to Epochs and it's not already present in said Epochs.
-
-    #Database/Lattice Errors.
-    MintError* = object of Exception #Used when Minting MR fails.
 
     #Network Errors.
     SocketError*         = object of Exception #Used when a Socket fails.

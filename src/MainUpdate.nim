@@ -3,10 +3,9 @@ include MainLocks
 #Get the most recent records.
 proc getRecords() {.async.} =
     records = @[]
-    aggregates = @[]
 
-    var jsonRecords: JSONNode = await rpc.consensus.getUnarchivedMeritHolderRecords()
-    for record in jsonRecords:
+    var jsonRecords: JSONNode = await rpc.consensus.getUnarchivedRecords()
+    for record in jsonRecords["records"]:
         records.add(
             newMeritHolderRecord(
                 newBLSPublicKey(record["holder"].getStr()),
@@ -14,7 +13,8 @@ proc getRecords() {.async.} =
                 record["merkle"].getStr().toHash(384)
             )
         )
-        aggregates.add(newBLSSignature(record["signature"].getStr()))
+
+    aggregate = newBLSSignature(jsonRecords["aggregate"].getStr())
 
 #Reset all data.
 #This is used when someone else mines a Block or we publish an invalid one.
@@ -42,7 +42,7 @@ proc reset() {.async.} =
     releaseRPC()
 
     #Create a block.
-    mining = newBlockObj(nonce, last, aggregates.aggregate(), records, miners)
+    mining = newBlockObj(nonce, last, aggregate, records, miners)
 
 #Check for Verifications.
 proc checkup() {.async.} =
@@ -82,4 +82,4 @@ proc checkup() {.async.} =
         releaseRPC()
 
         #Construct a new block.
-        mining = newBlockObj(nonce, last, aggregates.aggregate(), records, miners)
+        mining = newBlockObj(nonce, last, aggregate, records, miners)

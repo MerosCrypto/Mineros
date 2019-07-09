@@ -14,29 +14,29 @@ import ../../Wallet/MinerWallet
 import objects/BlockHeaderObj
 export BlockHeaderObj
 
-#Serialization lib,
+#Serialization lib.
 import ../../Network/Serialize/Merit/SerializeBlockHeader
 
 #Constructor.
 func newBlockHeader*(
     nonce: Natural,
     last: ArgonHash,
-    elements: BLSSignature,
+    aggregate: BLSSignature,
     miners: Blake384Hash,
-    time: Natural,
-    proof: Natural
+    time: uint32,
+    proof: uint32
 ): BlockHeader {.forceCheck: [
     ArgonError
 ].} =
     result = newBlockHeaderObj(
         nonce,
         last,
-        elements,
+        aggregate,
         miners,
         time,
         proof
     )
     try:
-        result.hash = Argon(result.serialize(true), result.proof.toBinary())
+        result.hash = Argon(result.serializeHash(), result.proof.toBinary())
     except ArgonError as e:
         fcRaise e

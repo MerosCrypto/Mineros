@@ -31,6 +31,12 @@ type Block* = object
     #Block Body.
     body*: BlockBody
 
+#Nonce getter.
+proc nonce*(
+    blockArg: Block
+): int {.inline, forceCheck: [].} =
+    blockArg.header.nonce
+
 #Hash getter.
 proc hash*(
     blockArg: Block
@@ -64,8 +70,8 @@ func newBlockObj*(
     aggregate: BLSSignature,
     records: seq[MeritHolderRecord],
     miners: Miners,
-    time: int64 = getTime(),
-    proof: Natural = 0
+    time: uint32 = getTime(),
+    proof: uint32 = 0
 ): Block {.forceCheck: [
     ArgonError
 ].} =

@@ -20,7 +20,7 @@ import BlockHeader
 import objects/BlockObj
 export BlockObj
 
-#Serialize BlockHeader libs (for inc).
+#Serialize BlockHeader lib (for inc).
 import ../../Network/Serialize/Merit/SerializeBlockHeader
 
 #Tables standard lib.
@@ -36,6 +36,6 @@ func inc*(
     inc(blockArg.header.proof)
     #Recalculate the hash.
     try:
-        blockArg.header.hash = Argon(blockArg.header.serialize(true), blockArg.header.proof.toBinary())
+        blockArg.header.hash = Argon(blockArg.header.serializeHash(), blockArg.header.proof.toBinary())
     except ArgonError as e:
         fcRaise e

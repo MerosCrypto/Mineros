@@ -13,12 +13,9 @@ export toHex, parseHexInt, parseHexStr
 #Nimcrypto lib (for secure RNG).
 import nimcrypto
 
-#Custom Time type (Natural int64 range).
-type Time* = range[0'i64 .. high(int64)]
-
 #Gets the epoch and returns it as a Time.
-proc getTime*(): Time {.inline, forceCheck: [].} =
-    Time(times.getTime().toUnix())
+proc getTime*(): uint32 {.inline, forceCheck: [].} =
+    uint32(times.getTime().toUnix())
 
 #Left-pads data, with a char or string, until the data is a certain length.
 func pad*(
@@ -30,6 +27,14 @@ func pad*(
 
     while result.len < len:
         result = prefix & result
+
+#Reverse a string.
+func reverse*(
+    data: string
+) : string {.forceCheck: [].} =
+    result = newString(data.len)
+    for i in 0 ..< data.len:
+        result[data.len - 1 - i] = data[i]
 
 #Converts a number to a binary string.
 func toBinary*(
@@ -65,7 +70,12 @@ func toBinary*(
         #Put the byte in the string.
         result &= char(b)
 
-#Converts a binary string to a number.
+#Converts a binary char/string to a number.
+func fromBinary*(
+    number: char
+): int {.inline, forceCheck: [].} =
+    int(number)
+
 func fromBinary*(
     number: string
 ): int {.forceCheck: [].} =
@@ -73,6 +83,22 @@ func fromBinary*(
     for b in 0 ..< number.len:
         #Add the byte after it's been properly shifted.
         result += int(number[b]) shl ((number.len - b - 1) * 8)
+
+#Extract a set of bits.
+func extractBits*(
+    data: uint16,
+    start: int,
+    bits: int
+): uint16 {.forceCheck: [].} =
+    (data shl start) shr (16 - bits)
+
+#Extract a set of bits.
+func extractBits*(
+    data: uint32,
+    start: int,
+    bits: int
+): uint32 {.forceCheck: [].} =
+    (data shl start) shr (32 - bits)
 
 #Securely generates X random bytes,
 proc randomFill*[T](

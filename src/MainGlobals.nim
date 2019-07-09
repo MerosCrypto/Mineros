@@ -18,7 +18,7 @@ var
     #Verifications.
     records: seq[MeritHolderRecord]
     #Aggregate Signatures.
-    aggregates: seq[BLSSignature]
+    aggregate: BLSSignature
     #Miners object.
     miners: Miners = newMinersObj()
     #Block.

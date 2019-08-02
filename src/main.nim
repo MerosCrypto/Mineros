@@ -1,19 +1,131 @@
-#The Main files include each other sequentially.
-#It starts with MainImports.
-#MainImports is included by MainGlobals.
-#MainGlobals is included by MainLocks.
-#MainLocks is included by MainUpdate.
-#MainUpdate is included by MainMine.
-#It ends with MainMine.
+#Util lib.
+import Util
 
-#We could include all of them in this file, but then all the other files would throw errors.
-#IDEs can't, and shouldn't, detect that an external file includes that file, and the external file resolves the dependencies.
+#Meros RPC lib.
+import MerosRPC
 
-#Include the last file in the sequence.
-include MainMine
+#OS standard lib.
+import os
+
+#Locks standard lib.
+import locks
+
+#Async standard lib.
+import asyncdispatch
+
+#String utils standard lib.
+import strutils
+
+#JSON standard lib.
+import json
+
+var
+    #Connect to the Meros Node.
+    rpc: MerosRPC = waitFor newMerosRPC()
+    #Lock for using the RPC.
+    rpcLock: Lock
+
+    #Public Key.
+    publicKey: string
+
+    #Header.
+    header: string
+    #Body.
+    body: string
+
+    #Current Difficulty.
+    difficulty: ArgonHash
+
+#If there are params, load them.
+if paramCount() > 0:
+    publicKey = paramStr(1)
+#Else, create a new wallet to mine to.
+else:
+    echo "No wallet was passed in. Please run this command with a BLS Public Key (in hex format) after it."
+    quit()
+
+#Acquire the RPC.
+proc acquireRPC() {.async.} =
+    #Acquire the RPC lock.
+    while not tryAcquire(rpcLock):
+        #While we can't acquire it, allow other async processes to run.
+        await sleepAsync(1)
+
+#Release the RPC.
+proc releaseRPC() =
+    release(rpcLock)
+
+#Reset all data.
+#This is used when someone else mines a Block or we publish an invalid one.
+proc reset() {.async.} =
+    #Acquire the RPC.
+    await acquireRPC()
+
+    #Get the Block template.
+    var blockTemplate: JSONNode = await rpc.merit.getBlockTemplate(%* [{
+        "miner": publicKey,
+        "amount": 100
+    }])
+    header = parseHexStr(blockTemplate["header"].getStr())
+    body = parseHexStr(blockTemplate["body"].getStr())
+
+    #Get the difficulty.
+    difficulty = (await rpc.merit.getDifficulty()).toArgonHash()
+
+    #Release the RPC.
+    releaseRPC()
+
+#Check for Verifications.
+proc checkup() {.async.} =
+    while true:
+        #Run every thirty seconds.
+        await sleepAsync(30000)
+
+        #Update the template/difficulty.
+        await reset()
+
+#Mine.
+proc mine(
+    startProof: int
+) {.async.} =
+    #Mine the chain.
+    var
+        proof: int = startProof
+        hash: ArgonHash
+    while true:
+        #Mine the Block.
+        hash = Argon(header, proof.toBinary())
+        if hash < difficulty:
+            #Allow checkup to run.
+            await sleepAsync(1)
+
+            #Increment the proof.
+            inc(proof)
+
+            #Continue.
+            continue
+
+        #Publish the block.
+        try:
+            echo "Publishing a Block."
+            await acquireRPC()
+            await rpc.merit.publishBlock(header & proof.toBinary().pad(4) & body)
+            #Print that we mined a block.
+            echo "Mined Block."
+        except Exception as e:
+            echo "Block we attempted to publish was rejected: " & e.msg
+        finally:
+            #Make sure we release the RPC.
+            releaseRPC()
+
+        #Since we either published a valid Block, or thought we did, reset.
+        await reset()
 
 #Reset so we have data to mine with.
 waitFor reset()
+
+#Start the checkup proc.
+asyncCheck checkup()
 
 #Start mining.
 asyncCheck mine(0)

@@ -4,17 +4,16 @@ setCommand("cpp")
 #Necessary flags.
 switch("threads", "on")
 
-#Optimize for size.
+#Optimize for size (which is faster than `opt=speed` for Meros (at least on x86_64)).
 switch("opt", "size")
-
-#Define release for usable StInt performance.
-switch("define", "release")
 
 #Enable stackTrace and lineTrace so users can submit workable crash reports.
 switch("stackTrace", "on")
 switch("lineTrace", "on")
 
 #Disable checks (which also disables assertions).
+#On branches that should never be executed, we use doAssert which is independent of this flag.
+#We previously had checks enabled. This creates inconsistent release/debug conditions.
 switch("checks", "off")
 
 #Enable hints.
@@ -28,16 +27,10 @@ switch("nimcache", "build/nimcache")
 switch("out", "build/Mineros")
 
 when defined(merosRelease):
-    #Disable finals.
-    switch("define", "finalsOff")
-
     #Disable extra debug info.
     switch("excessiveStackTrace", "off")
     switch("lineDir", "off")
 else:
-    #Enable finals.
-    switch("define", "finalsOn")
-
     #Enable extra debug info.
     switch("debuginfo")
     switch("excessiveStackTrace", "on")

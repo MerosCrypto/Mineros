@@ -17,11 +17,11 @@ proc Argon*(
         data,
         salt,
         1,
-        131072,
+        65536,
         1
     ).data
 
-#toHash function.
+#toArgonHash function.
 func toArgonHash*(
     hash: string
 ): ArgonHash =
@@ -34,6 +34,13 @@ func toArgonHash*(
     else:
         raise newException(ValueError, "toHash not handed the right amount of data.")
 
+#toString function.
+func toString*(
+    hash: ArgonHash
+): string =
+    result = newString(48)
+    for c in 0 ..< 48:
+        result[c] = char(hash.data[c])
 
 #Compare hash values.
 func `<`*(

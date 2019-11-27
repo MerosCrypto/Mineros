@@ -1,6 +1,9 @@
 #Util lib.
 import Util
 
+#BLS lib.
+import mc_bls
+
 #Meros RPC lib.
 import MerosRPC
 
@@ -25,9 +28,11 @@ var
     #Lock for using the RPC.
     rpcLock: Lock
 
-    #Public Key.
-    publicKey: string
+    #Private Key.
+    privateKey: PrivateKey
 
+    #ID.
+    id: int
     #Header.
     header: string
     #Body.
@@ -38,10 +43,10 @@ var
 
 #If there are params, load them.
 if paramCount() > 0:
-    publicKey = paramStr(1)
+    privateKey = newPrivateKeyFromSeed(parseHexStr(paramStr(1)))
 #Else, create a new wallet to mine to.
 else:
-    echo "No wallet was passed in. Please run this command with a BLS Public Key (in hex format) after it."
+    echo "No wallet was passed in. Please run this command with a BLS Seed (in hex format) after it."
     quit()
 
 #Acquire the RPC.
@@ -62,10 +67,8 @@ proc reset() {.async.} =
     await acquireRPC()
 
     #Get the Block template.
-    var blockTemplate: JSONNode = await rpc.merit.getBlockTemplate(%* [{
-        "miner": publicKey,
-        "amount": 100
-    }])
+    var blockTemplate: JSONNode = await rpc.merit.getBlockTemplate(privateKey.getPublicKey().toString())
+    id = blockTemplate["id"].getInt()
     header = parseHexStr(blockTemplate["header"].getStr())
     body = parseHexStr(blockTemplate["body"].getStr())
 
@@ -92,9 +95,13 @@ proc mine(
     var
         proof: int = startProof
         hash: ArgonHash
+        signature: Signature
     while true:
         #Mine the Block.
-        hash = Argon(header, proof.toBinary())
+        hash = Argon(header, proof.toBinary().pad(8))
+        signature = privateKey.sign(hash.toString())
+        hash = Argon(hash.toString(), signature.toString())
+
         if hash < difficulty:
             #Allow checkup to run.
             await sleepAsync(1)
@@ -107,9 +114,8 @@ proc mine(
 
         #Publish the block.
         try:
-            echo "Publishing a Block."
             await acquireRPC()
-            await rpc.merit.publishBlock(header & proof.toBinary().pad(4) & body)
+            await rpc.merit.publishBlock(id, header & proof.toBinary().pad(4) & signature.toString() & body)
             #Print that we mined a block.
             echo "Mined Block."
         except Exception as e:

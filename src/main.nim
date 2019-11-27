@@ -31,6 +31,8 @@ var
     #Private Key.
     privateKey: PrivateKey
 
+    #ID.
+    id: int
     #Header.
     header: string
     #Body.
@@ -66,6 +68,7 @@ proc reset() {.async.} =
 
     #Get the Block template.
     var blockTemplate: JSONNode = await rpc.merit.getBlockTemplate(privateKey.getPublicKey().toString())
+    id = blockTemplate["id"].getInt()
     header = parseHexStr(blockTemplate["header"].getStr())
     body = parseHexStr(blockTemplate["body"].getStr())
 
@@ -112,7 +115,7 @@ proc mine(
         #Publish the block.
         try:
             await acquireRPC()
-            await rpc.merit.publishBlock(header & proof.toBinary().pad(4) & signature.toString() & body)
+            await rpc.merit.publishBlock(id, header & proof.toBinary().pad(4) & signature.toString() & body)
             #Print that we mined a block.
             echo "Mined Block."
         except Exception as e:

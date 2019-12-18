@@ -43,7 +43,7 @@ var
 
 #If there are params, load them.
 if paramCount() > 0:
-    privateKey = newPrivateKeyFromSeed(parseHexStr(paramStr(1)))
+    privateKey = newPrivateKey(parseHexStr(paramStr(1)))
 #Else, create a new wallet to mine to.
 else:
     echo "No wallet was passed in. Please run this command with a BLS Seed (in hex format) after it."
@@ -67,7 +67,7 @@ proc reset() {.async.} =
     await acquireRPC()
 
     #Get the Block template.
-    var blockTemplate: JSONNode = await rpc.merit.getBlockTemplate(privateKey.getPublicKey().toString())
+    var blockTemplate: JSONNode = await rpc.merit.getBlockTemplate(privateKey.toPublicKey().serialize())
     id = blockTemplate["id"].getInt()
     header = parseHexStr(blockTemplate["header"].getStr())
     body = parseHexStr(blockTemplate["body"].getStr())
@@ -100,7 +100,7 @@ proc mine(
         #Mine the Block.
         hash = Argon(header, proof.toBinary().pad(8))
         signature = privateKey.sign(hash.toString())
-        hash = Argon(hash.toString(), signature.toString())
+        hash = Argon(hash.toString(), signature.serialize())
 
         if hash < difficulty:
             #Allow checkup to run.
@@ -115,7 +115,7 @@ proc mine(
         #Publish the block.
         try:
             await acquireRPC()
-            await rpc.merit.publishBlock(id, header & proof.toBinary().pad(4) & signature.toString() & body)
+            await rpc.merit.publishBlock(id, header & proof.toBinary().pad(4) & signature.serialize() & body)
             #Print that we mined a block.
             echo "Mined Block."
         except Exception as e:

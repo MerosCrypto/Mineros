@@ -1,103 +1,41 @@
-#Argon library.
-import Argon2
-
-#String utils standard lib.
-import strutils
-
-#Define the Hash Type.
-type ArgonHash* = object
-    data*: array[48, uint8]
-
-#Take in data and a salt; return a ArgonHash.
-proc Argon*(
-    data: string,
-    salt: string
-): ArgonHash =
-    result.data = Argon2d(
-        data,
-        salt,
-        1,
-        65536,
-        1
-    ).data
-
-#toArgonHash function.
-func toArgonHash*(
-    hash: string
-): ArgonHash =
-    if hash.len == 48:
-        for i in 0 ..< hash.len:
-            result.data[i] = uint8(hash[i])
-    elif hash.len == 96:
-        for i in countup(0, hash.len - 1, 2):
-            result.data[i div 2] = uint8(parseHexInt(hash[i .. i + 1]))
-    else:
-        raise newException(ValueError, "toHash not handed the right amount of data.")
-
-#toString function.
-func toString*(
-    hash: ArgonHash
-): string =
-    result = newString(48)
-    for c in 0 ..< 48:
-        result[c] = char(hash.data[c])
+#Math standard lib.
+import math
 
 #Compare hash values.
-func `<`*(
-    lhs: ArgonHash,
-    rhs: ArgonHash
+func lessThan*(
+    lhs: string,
+    rhs: string
 ): bool =
     var bytes: int = 48
     for i in 0 ..< bytes:
-        if lhs.data[i] == rhs.data[i]:
+        if int(lhs[i]) == int(rhs[i]):
             continue
-        elif lhs.data[i] < rhs.data[i]:
+        elif int(lhs[i]) < int(rhs[i]):
             return true
         else:
             return false
     return false
 
-#Left-pads data, with a char or string, until the data is a certain length.
-func pad*(
-    data: char or string,
-    len: int,
-    prefix: char or string = char(0)
-): string =
-    result = $data
-
-    while result.len < len:
-        result = prefix & result
-
 #Converts a number to a binary string.
 func toBinary*(
-    number: SomeNumber
-): string =
+    number: SomeNumber,
+    length: int = 0
+): string {.raises: [].} =
+    #Get the amount of bytes the number actually uses.
+    var used: int = 0
+    if number != 0:
+        used = ceil((floor(log2(float(number))) + 1) / 8).toInt()
+
+    #Add filler bytes to the final result is at least length.
+    #If the amount of bytes needed is more than the length, the result will be the amount needed.
+    result = newString(max(length - used, 0))
+
+    #Shift counters.
     var
-        #Get the bytes of the number.
-        bytes: int = sizeof(number)
-        #Init the shift counters.
-        left: int = -8
-        right: int = bytes * 8
-        #Have we encountered a non 0 byte yet?
-        filler: bool = true
+        mask: uint = 255
+        fromEnd: int = (used - 1) * 8
 
     #Iterate over each byte.
-    for i in 0 ..< bytes:
-        #Update left/right.
-        left += 8
-        right -= 8
-
-        #Clear the left side, shift it back, and clear the right side.
-        var b: int = int(number shl left shr (left + right))
-
-        #If we haven't hit a non-0 byte...
-        if filler:
-            #And this is a 0 byte...
-            if b == 0:
-                #Continue.
-                continue
-            #Else, mark that we have hit a 0 byte.
-            filler = false
-
-        #Put the byte in the string.
-        result &= char(b)
+    while fromEnd >= 0:
+        result &= char((uint64(number) and uint64(mask shl fromEnd)) shr fromEnd)
+        fromEnd -= 8

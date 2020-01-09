@@ -8,11 +8,6 @@ switch("opt", "size")
 switch("stackTrace", "on")
 switch("lineTrace", "on")
 
-#Disable checks (which also disables assertions).
-#On branches that should never be executed, we use doAssert which is independent of this flag.
-#We previously had checks enabled. This creates inconsistent release/debug conditions.
-switch("checks", "off")
-
 #Enable hints.
 switch("hints", "on")
 
@@ -23,7 +18,7 @@ switch("parallelBuild", "0")
 switch("nimcache", "build/nimcache")
 switch("out", "build/Mineros")
 
-when defined(merosRelease):
+when defined(release):
     #Disable extra debug info.
     switch("excessiveStackTrace", "off")
     switch("lineDir", "off")

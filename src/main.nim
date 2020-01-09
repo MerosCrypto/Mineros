@@ -1,6 +1,9 @@
 #Util lib.
 import Util
 
+#RandomX lib.
+import mc_randomx
+
 #BLS lib.
 import mc_bls
 
@@ -39,7 +42,15 @@ var
     body: string
 
     #Current Difficulty.
-    difficulty: ArgonHash
+    difficulty: string
+
+    #RandomX VM.
+    key: string = ""
+    flags: RandomXFlags = getFlags()
+    cache: RandomXCache = allocCache(flags)
+    vm: RandomXVM
+
+vm = createVM(flags, cache, nil)
 
 #If there are params, load them.
 if paramCount() > 0:
@@ -69,11 +80,15 @@ proc reset() {.async.} =
     #Get the Block template.
     var blockTemplate: JSONNode = await rpc.merit.getBlockTemplate(privateKey.toPublicKey().serialize())
     id = blockTemplate["id"].getInt()
+    if key != blockTemplate["key"].getStr():
+        key = parseHexStr(blockTemplate["key"].getStr())
+        cache.init(key)
+        vm.setCache(cache)
     header = parseHexStr(blockTemplate["header"].getStr())
     body = parseHexStr(blockTemplate["body"].getStr())
 
     #Get the difficulty.
-    difficulty = (await rpc.merit.getDifficulty()).toArgonHash()
+    difficulty = await rpc.merit.getDifficulty()
 
     #Release the RPC.
     releaseRPC()
@@ -94,15 +109,15 @@ proc mine(
     #Mine the chain.
     var
         proof: int = startProof
-        hash: ArgonHash
+        hash: string
         signature: Signature
     while true:
         #Mine the Block.
-        hash = Argon(header, proof.toBinary().pad(8))
-        signature = privateKey.sign(hash.toString())
-        hash = Argon(hash.toString(), signature.serialize())
+        hash = vm.hash(header & proof.toBinary(4))
+        signature = privateKey.sign(hash)
+        hash = vm.hash(hash & signature.serialize())
 
-        if hash < difficulty:
+        if hash.lessThan(difficulty):
             #Allow checkup to run.
             await sleepAsync(1)
 
@@ -115,7 +130,7 @@ proc mine(
         #Publish the block.
         try:
             await acquireRPC()
-            await rpc.merit.publishBlock(id, header & proof.toBinary().pad(4) & signature.serialize() & body)
+            await rpc.merit.publishBlock(id, header & proof.toBinary(4) & signature.serialize() & body)
             #Print that we mined a block.
             echo "Mined Block."
         except Exception as e:

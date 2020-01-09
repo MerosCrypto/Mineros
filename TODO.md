@@ -7,4 +7,3 @@
 ### Features:
 
 - Configuration file.
-- Multiple Miner payout.

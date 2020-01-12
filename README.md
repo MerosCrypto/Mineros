@@ -7,6 +7,6 @@
 ```
 git clone https://github.com/MerosCrypto/Mineros
 cd Mineros
-nimble install https://github.com/MerosCrypto/mc_randomx https://github.com/MerosCrypto/mc_bls https://github.com/MerosCrypto/Nim-Meros-RPC nimcrypto
+nimble install https://github.com/MerosCrypto/mc_randomx https://github.com/MerosCrypto/mc_bls https://github.com/MerosCrypto/Nim-Meros-RPC
 nim c src/main.nim
 ```

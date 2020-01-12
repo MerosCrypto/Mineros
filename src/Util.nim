@@ -6,8 +6,7 @@ func lessThan*(
     lhs: string,
     rhs: string
 ): bool =
-    var bytes: int = 48
-    for i in 0 ..< bytes:
+    for i in 0 ..< 32:
         if int(lhs[i]) == int(rhs[i]):
             continue
         elif int(lhs[i]) < int(rhs[i]):

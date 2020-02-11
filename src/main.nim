@@ -66,7 +66,7 @@ if paramCount() == 2:
         quit(1)
 #Else, create a new wallet to mine to.
 else:
-    echo "No host and port is required.\n"
+    echo "Meros node host and port is required.\n"
     echo "Usage: Mineros <host> <port>"
     quit(1)
 

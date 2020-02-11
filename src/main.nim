@@ -26,13 +26,17 @@ import strutils
 import json
 
 var
+    #Meros node host
+    host: string
+    #Meros node port
+    port: int
     #Connect to the Meros Node.
-    rpc: MerosRPC = waitFor newMerosRPC()
+    rpc: MerosRPC
     #Lock for using the RPC.
     rpcLock: Lock
 
-    #Private Key.
-    privateKey: PrivateKey
+    #Miner Key.
+    minerKey: PrivateKey
 
     #ID.
     id: int
@@ -53,12 +57,18 @@ var
 vm = createVM(flags, cache, nil)
 
 #If there are params, load them.
-if paramCount() > 0:
-    privateKey = newPrivateKey(parseHexStr(paramStr(1)))
+if paramCount() == 2:
+    host = paramStr(1)
+    try:
+        port = parseInt(paramStr(2))
+    except ValueError as e:
+        echo "Failed to parse port: ", e.msg
+        quit(1)
 #Else, create a new wallet to mine to.
 else:
-    echo "No wallet was passed in. Please run this command with a BLS Seed (in hex format) after it."
-    quit()
+    echo "No host and port is required.\n"
+    echo "Usage: Mineros <host> <port>"
+    quit(1)
 
 #Acquire the RPC.
 proc acquireRPC() {.async.} =
@@ -78,7 +88,8 @@ proc reset() {.async.} =
     await acquireRPC()
 
     #Get the Block template.
-    var blockTemplate: JSONNode = await rpc.merit.getBlockTemplate(privateKey.toPublicKey().serialize())
+    var blockTemplate: JSONNode = await rpc.merit.getBlockTemplate(
+            minerKey.toPublicKey().serialize())
     id = blockTemplate["id"].getInt()
     if key != blockTemplate["key"].getStr():
         key = parseHexStr(blockTemplate["key"].getStr())
@@ -89,6 +100,19 @@ proc reset() {.async.} =
 
     #Get the difficulty.
     difficulty = await rpc.merit.getDifficulty()
+
+    #Release the RPC.
+    releaseRPC()
+
+proc getMinerKey(): Future[PrivateKey] {.async.} =
+    #Acquire the RPC.
+    await acquireRPC()
+
+    #Get miner key
+    var key: string = await rpc.personal.getMiner()
+
+    #Parse to PrivateKey
+    result = newPrivateKey(parseHexStr(key))
 
     #Release the RPC.
     releaseRPC()
@@ -114,7 +138,7 @@ proc mine(
     while true:
         #Mine the Block.
         hash = vm.hash(header & proof.toBinary(4))
-        signature = privateKey.sign(hash)
+        signature = minerKey.sign(hash)
         hash = vm.hash(hash & signature.serialize())
 
         if hash.lessThan(difficulty):
@@ -130,7 +154,8 @@ proc mine(
         #Publish the block.
         try:
             await acquireRPC()
-            await rpc.merit.publishBlock(id, header & proof.toBinary(4) & signature.serialize() & body)
+            await rpc.merit.publishBlock(id, header & proof.toBinary(4) &
+                    signature.serialize() & body)
             #Print that we mined a block.
             echo "Mined Block."
         except Exception as e:
@@ -142,6 +167,29 @@ proc mine(
         #Since we either published a valid Block, or thought we did, reset.
         await reset()
 
+proc ctrlc() {.noconv.} =
+    echo "Exiting."
+    quit(0)
+
+#Register CTRL+C exiting.
+setControlCHook(ctrlc)
+
+#Initialize RPC lock.
+initLock(rpcLock)
+
+#Connect to RPC.
+try:
+    echo "Connecting to RPC."
+    rpc = waitFor newMerosRPC(host, port)
+except OSError:
+    # We don't output e.msg because of https://github.com/nim-lang/Nim/issues/11029
+    echo "Failed to connect to RPC at ", host, ":", port, "."
+    quit(1)
+
+#Get Miner Key
+echo "Retrieving miner key."
+minerKey = waitFor getMinerKey()
+
 #Reset so we have data to mine with.
 waitFor reset()
 
@@ -149,7 +197,12 @@ waitFor reset()
 asyncCheck checkup()
 
 #Start mining.
+echo "Mining."
 asyncCheck mine(0)
 
 #Run forever.
-runForever()
+try:
+    runForever()
+except Exception:
+    echo "Done."
+    quit(1)

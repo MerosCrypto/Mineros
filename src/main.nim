@@ -111,7 +111,7 @@ proc getMinerKey(): Future[PrivateKey] {.async.} =
     var key: string = await rpc.personal.getMiner()
 
     #Parse to PrivateKey
-    result = newPrivateKey(parseHexStr(key))
+    result = newPrivateKey(key)
 
     #Release the RPC.
     releaseRPC()
@@ -180,7 +180,7 @@ try:
     echo "Connecting to RPC."
     rpc = waitFor newMerosRPC(host, port)
 except OSError:
-    # We don't output e.msg because of https://github.com/nim-lang/Nim/issues/11029
+    #We don't output e.msg because of https://github.com/nim-lang/Nim/issues/11029.
     echo "Failed to connect to RPC at ", host, ":", port, "."
     quit(1)
 

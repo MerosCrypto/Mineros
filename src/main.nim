@@ -88,8 +88,7 @@ proc reset() {.async.} =
     await acquireRPC()
 
     #Get the Block template.
-    var blockTemplate: JSONNode = await rpc.merit.getBlockTemplate(
-            minerKey.toPublicKey().serialize())
+    var blockTemplate: JSONNode = await rpc.merit.getBlockTemplate(minerKey.toPublicKey().serialize())
     id = blockTemplate["id"].getInt()
     if key != blockTemplate["key"].getStr():
         key = parseHexStr(blockTemplate["key"].getStr())
@@ -154,8 +153,7 @@ proc mine(
         #Publish the block.
         try:
             await acquireRPC()
-            await rpc.merit.publishBlock(id, header & proof.toBinary(4) &
-                    signature.serialize() & body)
+            await rpc.merit.publishBlock(id, header & proof.toBinary(4) & signature.serialize() & body)
             #Print that we mined a block.
             echo "Mined Block."
         except Exception as e:
@@ -201,8 +199,4 @@ echo "Mining."
 asyncCheck mine(0)
 
 #Run forever.
-try:
-    runForever()
-except Exception:
-    echo "Done."
-    quit(1)
+runForever()

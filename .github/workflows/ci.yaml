@@ -1,16 +1,20 @@
 name: build
 
-on: push
+on:
+    push:
+        branches:
+            - master
+    pull_request:
+        branches:
+            - master
 
 jobs:
     mineros:
         runs-on: ubuntu-latest
         steps:
             -   uses: actions/checkout@v2
-            -   name: Prepare Dockerfile
-                run: cp ./.github/workflows/Dockerfile .
             -   name: Docker Build
-                run: docker build -t meroscrypto/mineros:latest
+                run: docker build -f .github/workflows/Dockerfile -t meroscrypto/mineros:latest .
             -   name: Docker Login
                 if: github.ref == 'refs/heads/master'
                 uses: azure/docker-login@v1

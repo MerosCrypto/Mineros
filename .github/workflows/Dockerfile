@@ -8,12 +8,12 @@ RUN apt-get update && apt-get install -y \
     automake \
     libtool \
     curl
-RUN cd Mineros && \
-    nimble install https://github.com/MerosCrypto/mc_randomx && \
+RUN nimble install https://github.com/MerosCrypto/mc_randomx && \
     nimble install https://github.com/MerosCrypto/mc_bls && \
-    nimble install https://github.com/MerosCrypto/Nim-Meros-RPC && \
-    nim c src/main.nim
+    nimble install https://github.com/MerosCrypto/Nim-Meros-RPC
+COPY . ./
+RUN nim c src/main.nim
 
 FROM ubuntu:devel
-COPY --from=builder ./Mineros/build/Mineros .
+COPY --from=builder ./build/Mineros .
 ENTRYPOINT ["./Mineros"]

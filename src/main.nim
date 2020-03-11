@@ -10,6 +10,9 @@ import mc_bls
 #Meros RPC lib.
 import MerosRPC
 
+#StInt lib.
+import stint
+
 #OS standard lib.
 import os
 
@@ -46,7 +49,7 @@ var
     body: string
 
     #Current Difficulty.
-    difficulty: string
+    difficulty: StUint[512]
 
     #RandomX VM.
     key: string = ""
@@ -98,7 +101,7 @@ proc reset() {.async.} =
     body = parseHexStr(blockTemplate["body"].getStr())
 
     #Get the difficulty.
-    difficulty = await rpc.merit.getDifficulty()
+    difficulty = parse("0x" & (await rpc.merit.getDifficulty()).toHex(), StUint[512], 16)
 
     #Release the RPC.
     releaseRPC()
@@ -134,36 +137,38 @@ proc mine(
         proof: int = startProof
         hash: string
         signature: Signature
+        final: StUint[512]
     while true:
-        #Mine the Block.
-        hash = vm.hash(header & proof.toBinary(4))
-        signature = minerKey.sign(hash)
-        hash = vm.hash(hash & signature.serialize())
+        block thisProof:
+            #Mine the Block.
+            hash = vm.hash(header & proof.toBinary(4))
+            signature = minerKey.sign(hash)
+            hash = vm.hash(hash & signature.serialize())
 
-        if hash.lessThan(difficulty):
-            #Allow checkup to run.
-            await sleepAsync(1)
+            final = parse("0x" & hash.toHex(), StUint[512], 16) * difficulty
+            for b in final.toByteArrayBE()[0 ..< 32]:
+                if b != 0:
+                    #Allow checkup to run.
+                    await sleepAsync(1)
+                    #Increment the proof.
+                    inc(proof)
+                    #Try the next proof.
+                    break thisProof
 
-            #Increment the proof.
-            inc(proof)
+            #Since we didn't move to the next proof, publish the block.
+            try:
+                await acquireRPC()
+                await rpc.merit.publishBlock(id, header & proof.toBinary(4) & signature.serialize() & body)
+                #Print that we mined a block.
+                echo "Mined Block."
+            except Exception as e:
+                echo "Block we attempted to publish was rejected: " & e.msg
+            finally:
+                #Make sure we release the RPC.
+                releaseRPC()
 
-            #Continue.
-            continue
-
-        #Publish the block.
-        try:
-            await acquireRPC()
-            await rpc.merit.publishBlock(id, header & proof.toBinary(4) & signature.serialize() & body)
-            #Print that we mined a block.
-            echo "Mined Block."
-        except Exception as e:
-            echo "Block we attempted to publish was rejected: " & e.msg
-        finally:
-            #Make sure we release the RPC.
-            releaseRPC()
-
-        #Since we either published a valid Block, or thought we did, reset.
-        await reset()
+            #Since we either published a valid Block, or thought we did, reset.
+            await reset()
 
 proc ctrlc() {.noconv.} =
     echo "Exiting."

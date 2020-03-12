@@ -11,7 +11,7 @@ RUN apt-get update && apt-get install -y \
 RUN nimble install https://github.com/MerosCrypto/mc_randomx && \
     nimble install https://github.com/MerosCrypto/mc_bls && \
     nimble install https://github.com/MerosCrypto/Nim-Meros-RPC && \
-    stint
+    nimble install stint
 COPY . ./
 RUN nim c src/main.nim
 

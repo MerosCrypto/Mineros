@@ -1,40 +1,36 @@
-#Math standard lib.
-import math
+import bitops
 
-#Compare hash values.
-func lessThan*(
-    lhs: string,
-    rhs: string
-): bool =
-    for i in 0 ..< 32:
-        if int(lhs[i]) == int(rhs[i]):
-            continue
-        elif int(lhs[i]) < int(rhs[i]):
-            return true
-        else:
-            return false
-    return false
+import stint
 
 #Converts a number to a binary string.
 func toBinary*(
-    number: SomeNumber,
-    length: int = 0
+  number: SomeNumber,
+  length: int = 0
 ): string {.raises: [].} =
-    #Get the amount of bytes the number actually uses.
-    var used: int = 0
-    if number != 0:
-        used = ceil((floor(log2(float(number))) + 1) / 8).toInt()
+  var used: int = 0
+  if number != 0:
+    used = sizeof(number) - (countLeadingZeroBits(number) div 8)
+  result = newString(max(length, used))
 
-    #Add filler bytes to the final result is at least length.
-    #If the amount of bytes needed is more than the length, the result will be the amount needed.
-    result = newString(max(length - used, 0))
+  var c: int = 0
+  while c < used:
+    result[c] = char((number shr (c * 8)) and 0b11111111)
+    inc(c)
 
-    #Shift counters.
-    var
-        mask: uint = 255
-        fromEnd: int = (used - 1) * 8
+#Check if a hash overflows when multiplied by a factor.
+#Used for the difficulty code.
+proc overflows*(
+  hash: string,
+  factor: uint32 or uint64
+): bool {.raises: [].} =
+  var
+    hashCopy: array[64, byte]
+    original: StUInt[512]
+  for b in 0 ..< 32:
+    hashCopy[b] = byte(hash[b])
+  original = StUInt[512].fromBytesLE(hashCopy)
 
-    #Iterate over each byte.
-    while fromEnd >= 0:
-        result &= char((uint64(number) and uint64(mask shl fromEnd)) shr fromEnd)
-        fromEnd -= 8
+  var product: array[64, byte] = (original * stuint(factor, 512)).toBytesLE()
+  for b in 32 ..< 64:
+    if product[b] != 0:
+      return true

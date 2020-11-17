@@ -95,12 +95,11 @@ proc mine(
     proof: int = startProof
     hash: string
     signature: Signature
-    final: StUint[512]
   while true:
     block thisProof:
       #Mine the Block.
       hash = vm.hash(header & proof.toBinary(4))
-      signature = minerKey.sign(hash)
+      signature = minerKey.sign(hash, "MEROS-V00-CS01-with-BLS12381G1_XMD:SHA-256_SSWU_RO_")
       hash = vm.hash(hash & signature.serialize())
 
       if hash.overflows(difficulty):

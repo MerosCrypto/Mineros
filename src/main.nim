@@ -21,7 +21,6 @@ var
 
   id: int
   header: string
-  body: string
 
   difficulty: uint64
 
@@ -66,7 +65,6 @@ proc reset() {.async.} =
     cache.init(key)
     vm.setCache(cache)
   header = parseHexStr(blockTemplate["header"].getStr())
-  body = parseHexStr(blockTemplate["body"].getStr())
 
   #Get the difficulty.
   difficulty = fromHex[uint64]((await rpc.merit.getDifficulty()).toHex())
@@ -113,7 +111,7 @@ proc mine(
       #Since we didn't move to the next proof, publish the block.
       try:
         await acquireRPC()
-        await rpc.merit.publishBlock(id, header & proof.toBinary(4) & signature.serialize() & body)
+        await rpc.merit.publishBlock(id, header & proof.toBinary(4) & signature.serialize())
         #Print that we mined a block.
         echo "Mined Block."
       except Exception as e:
